@@ -136,11 +136,13 @@ static int toyota_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
       vehicle_moving = ABS(speed / 4) > TOYOTA_STANDSTILL_THRSLD;
     }
 
-    // most cars have brake_pressed on 0x226, corolla and rav4 on 0x224
-    if ((addr == 0x224) || (addr == 0x226)) {
-      int byte = (addr == 0x224) ? 0 : 4;
-      brake_pressed = ((GET_BYTE(to_push, byte) >> 5) & 1) != 0;
-    }
+
+    //Commented code below to allow no disengage on brake.
+    // // most cars have brake_pressed on 0x226, corolla and rav4 on 0x224
+    // if ((addr == 0x224) || (addr == 0x226)) {
+    //   int byte = (addr == 0x224) ? 0 : 4;
+    //   brake_pressed = ((GET_BYTE(to_push, byte) >> 5) & 1) != 0;
+    // }
 
     // sample gas interceptor
     if (addr == 0x201) {

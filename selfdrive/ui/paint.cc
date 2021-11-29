@@ -157,7 +157,19 @@ static void ui_draw_vision_lane_lines(UIState *s) {
   // paint path
   ui_draw_line(s, scene.track_vertices, nullptr, &track_bg);
 }
-
+//Modelbox
+static void ui_draw_modelbox(UIState *s){
+  const int center_x = s->fb_w/2;
+  const int center_y = s->fb_h/2;
+  const int w = 512*2;
+  const int h = 256*2;
+  nvgBeginPath(s->vg);
+  nvgRoundedRect(s->vg, center_x - (w / 2), center_y - (h / 2), w, h, 20);
+  nvgStrokeColor(s->vg, nvgRGBA(2,138,242,100));
+  nvgStrokeWidth(s->vg, 8);
+  nvgStroke(s->vg);
+  nvgClosePath(s->vg);
+}
 // Draw all world space objects.
 static void ui_draw_world(UIState *s) {
   nvgScissor(s->vg, 0, 0, s->fb_w, s->fb_h);
@@ -190,7 +202,7 @@ static void ui_draw_vision_maxspeed(UIState *s) {
   ui_draw_rect(s->vg, rect, COLOR_WHITE_ALPHA(100), 10, 20.);
 
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
-  ui_draw_text(s, rect.centerX(), 118, "MAX", 26 * 2.5, COLOR_WHITE_ALPHA(is_cruise_set ? 200 : 100), "sans-regular");
+  ui_draw_text(s, rect.centerX(), 118, "SET", 26 * 2.5, COLOR_WHITE_ALPHA(is_cruise_set ? 200 : 100), "sans-regular");
   if (is_cruise_set) {
     const std::string maxspeed_str = std::to_string((int)std::nearbyint(maxspeed));
     ui_draw_text(s, rect.centerX(), 212, maxspeed_str.c_str(), 48 * 2.5, COLOR_WHITE, "sans-bold");
@@ -203,8 +215,20 @@ static void ui_draw_vision_speed(UIState *s) {
   const float speed = std::max(0.0, (*s->sm)["carState"].getCarState().getVEgo() * (s->scene.is_metric ? 3.6 : 2.2369363));
   const std::string speed_str = std::to_string((int)std::nearbyint(speed));
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
-  ui_draw_text(s, s->fb_w/2, 210, speed_str.c_str(), 96 * 2.5, COLOR_WHITE, "sans-bold");
-  ui_draw_text(s, s->fb_w/2, 290, s->scene.is_metric ? "km/h" : "mph", 36 * 2.5, COLOR_WHITE_ALPHA(200), "sans-regular");
+  if (speed <= 60){
+    ui_draw_text(s, s->fb_w/2, 165, speed_str.c_str(), 96 * 2.5, nvgRGBA(63,191,63,255), "sans-bold");
+  }
+  else if (speed > 60 && speed <= 100) {
+    ui_draw_text(s, s->fb_w/2, 165, speed_str.c_str(), 96 * 2.5, nvgRGBA(230,130,30,255), "sans-bold");
+  }
+  else if (speed > 100){
+    ui_draw_text(s, s->fb_w/2, 165, speed_str.c_str(), 96 * 2.5, nvgRGBA(230,30,30,255), "sans-bold");
+  }
+  else{
+    ui_draw_text(s, s->fb_w/2, 165, speed_str.c_str(), 96 * 2.5, COLOR_WHITE, "sans-bold");
+  }
+  ui_draw_text(s, s->fb_w/2, 235, s->scene.is_metric ? "km/h" : "mph", 36 * 2.5, COLOR_WHITE_ALPHA(200), "sans-regular");
+  ui_draw_text(s, s->fb_w/2, 1000, "On branch: Stable", 15 * 2.5, nvgRGBA(2,138,242,255), "sans-regular");
 }
 
 static void ui_draw_vision_event(UIState *s) {
@@ -232,6 +256,7 @@ static void ui_draw_vision_header(UIState *s) {
   ui_fill_rect(s->vg, {0, 0, s->fb_w , header_h}, gradient);
   ui_draw_vision_maxspeed(s);
   ui_draw_vision_speed(s);
+  ui_draw_modelbox(s);
   ui_draw_vision_event(s);
 }
 
